@@ -6,7 +6,7 @@ import FinancialOrganizer from './big-racks-generator/page';
  * @returns {JSX.Element} The rendered HomePage component.
  */
 const Page = () => {
-    return <p>TODO</p>;
+    return <FinancialOrganizer />;
 };
 
 export default Page;
