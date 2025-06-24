@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { useFinancial } from '@/app/FinancialContext';
+import { useFinancial } from '@/context/FinancialContext';
 import { ExpenseCategory } from '@/types';
 import { calculateTotalExpenses, parseCurrency } from '@/utils';
 
@@ -16,7 +16,15 @@ const defaultCategories: ExpenseCategory[] = [
     { category: 'Outros', items: [] }
 ];
 
-export const ExpensesForm = ({ onNext, onBack }: { onNext: () => void; onBack: () => void }) => {
+export const ExpensesForm = ({
+    onNext,
+    onBack,
+    onReset
+}: {
+    onNext: () => void;
+    onBack: () => void;
+    onReset: () => void;
+}) => {
     const { data, updateData } = useFinancial();
     const [expenses, setExpenses] = useState<ExpenseCategory[]>(
         data.fixedExpenses.length > 0 ? data.fixedExpenses : defaultCategories
@@ -136,6 +144,11 @@ export const ExpensesForm = ({ onNext, onBack }: { onNext: () => void; onBack: (
                         onClick={handleSubmit}
                         className='flex-1 rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-blue-700'>
                         Continuar
+                    </button>
+                </div>
+                <div className='mt-6 text-center'>
+                    <button onClick={onReset} className='text-sm font-medium text-red-600 hover:text-red-800'>
+                        Limpar todos os dados e recomeçar
                     </button>
                 </div>
             </div>

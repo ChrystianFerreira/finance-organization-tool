@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import { useFinancial } from '@/app/FinancialContext';
+import { useFinancial } from '@/context/FinancialContext';
 import { parseCurrency } from '@/utils';
 
 import { Target } from 'lucide-react';

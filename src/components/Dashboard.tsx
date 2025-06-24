@@ -1,9 +1,9 @@
-import { useFinancial } from '@/app/FinancialContext';
+import { useFinancial } from '@/context/FinancialContext';
 import { calculateTotalExpenses, calculateWeeklyBudget, formatCurrency } from '@/utils';
 
 import { Calculator, Edit3, TrendingDown, TrendingUp } from 'lucide-react';
 
-export const Dashboard = ({ onEdit }: { onEdit: (step: number) => void }) => {
+export const Dashboard = ({ onEdit, onReset }: { onEdit: (step: number) => void; onReset: () => void }) => {
     const { data, scenario, setScenario } = useFinancial();
 
     const totalExpenses = calculateTotalExpenses(data.fixedExpenses);

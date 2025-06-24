@@ -1,10 +1,5 @@
-import FinancialOrganizer from './big-racks-generator/page';
+import FinancialOrganizer from '../components/FinancialOrganizer';
 
-/**
- * The main page component that renders the HomePage component.
- *
- * @returns {JSX.Element} The rendered HomePage component.
- */
 const Page = () => {
     return <FinancialOrganizer />;
 };
