@@ -1,12 +1,17 @@
-import { useFinancial } from '@/context/FinancialContext';
-import { calculateTotalExpenses, calculateWeeklyBudget, formatCurrency } from '@/utils';
+import { useState } from 'react';
 
-import { Calculator, Edit3, TrendingDown, TrendingUp } from 'lucide-react';
+import { useFinancial } from '@/context/FinancialContext';
+import { calculateTotalExpenses, calculateWeeklyBudget, formatCurrency, parseCurrency } from '@/utils';
+
+import { Calculator, CreditCard, Edit3, Target, TrendingDown, TrendingUp } from 'lucide-react';
 
 export const Dashboard = ({ onEdit, onReset }: { onEdit: (step: number) => void; onReset: () => void }) => {
-    const { data, scenario, setScenario } = useFinancial();
+    const { data, updateData, scenario, setScenario } = useFinancial();
+    const [isEditingSavings, setIsEditingSavings] = useState(false);
+    const [savingsInput, setSavingsInput] = useState(data.savingsGoal.toString());
 
     const totalExpenses = calculateTotalExpenses(data.fixedExpenses);
+    const totalMonthlyInstallments = data.installments?.reduce((acc, curr) => acc + curr.monthlyAmount, 0) || 0;
 
     const getCurrentIncome = () => {
         if (data.income.type === 'fixed') {
@@ -16,12 +21,34 @@ export const Dashboard = ({ onEdit, onReset }: { onEdit: (step: number) => void;
         return scenario === 'pessimistic' ? data.income.minAmount || 0 : data.income.maxAmount || 0;
     };
 
+    const handleSavingsBlur = () => {
+        const newValue = parseCurrency(savingsInput);
+        updateData({ savingsGoal: newValue });
+        setSavingsInput(newValue.toString());
+        setIsEditingSavings(false);
+    };
+
+    const handleSavingsKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter') {
+            handleSavingsBlur();
+        } else if (e.key === 'Escape') {
+            setIsEditingSavings(false);
+            setSavingsInput(data.savingsGoal.toString());
+        }
+    };
+
     const currentIncome = getCurrentIncome();
-    const remaining = currentIncome - totalExpenses - data.savingsGoal;
-    const weeklyBudget = calculateWeeklyBudget(currentIncome, totalExpenses, data.savingsGoal);
+    const remaining = currentIncome - totalExpenses - data.savingsGoal - totalMonthlyInstallments;
+    const weeklyBudget = calculateWeeklyBudget(
+        currentIncome,
+        totalExpenses + totalMonthlyInstallments,
+        data.savingsGoal
+    );
+    const futureWeeklyBudget = calculateWeeklyBudget(currentIncome, totalExpenses, data.savingsGoal);
 
     const isVariableIncome = data.income.type === 'variable';
     const isNegative = remaining < 0;
+    const hasInstallments = totalMonthlyInstallments > 0;
 
     return (
         <div className='mx-auto max-w-4xl space-y-6 p-6'>
@@ -58,7 +85,7 @@ export const Dashboard = ({ onEdit, onReset }: { onEdit: (step: number) => void;
                     </div>
                 )}
 
-                <div className='mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4'>
+                <div className='mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5'>
                     <div className='rounded-lg bg-green-50 p-4'>
                         <div className='mb-2 flex items-center justify-between'>
                             <span className='text-sm font-medium text-green-700'>Renda Mensal</span>
@@ -84,14 +111,43 @@ export const Dashboard = ({ onEdit, onReset }: { onEdit: (step: number) => void;
                         <div className='text-2xl font-bold text-blue-600'>{formatCurrency(totalExpenses)}</div>
                     </div>
 
-                    <div className='rounded-lg bg-purple-50 p-4'>
+                    <div className='rounded-lg bg-orange-50 p-4'>
                         <div className='mb-2 flex items-center justify-between'>
-                            <span className='text-sm font-medium text-purple-700'>Meta Economia</span>
-                            <button onClick={() => onEdit(2)} className='text-purple-600 hover:text-purple-800'>
+                            <span className='text-sm font-medium text-orange-700'>Parcelamentos</span>
+                            <button onClick={() => onEdit(2)} className='text-orange-600 hover:text-orange-800'>
                                 <Edit3 size={16} />
                             </button>
                         </div>
-                        <div className='text-2xl font-bold text-purple-600'>{formatCurrency(data.savingsGoal)}</div>
+                        <div className='text-2xl font-bold text-orange-600'>
+                            {formatCurrency(totalMonthlyInstallments)}
+                        </div>
+                    </div>
+
+                    <div className='rounded-lg bg-purple-50 p-4'>
+                        <div className='mb-2 flex items-center justify-between'>
+                            <span className='text-sm font-medium text-purple-700'>Meta Economia</span>
+                            <button
+                                onClick={() => setIsEditingSavings(true)}
+                                className='text-purple-600 hover:text-purple-800'>
+                                <Edit3 size={16} />
+                            </button>
+                        </div>
+                        {isEditingSavings ? (
+                            <input
+                                type='text'
+                                value={savingsInput}
+                                onChange={(e) => setSavingsInput(e.target.value)}
+                                onBlur={handleSavingsBlur}
+                                onKeyDown={handleSavingsKeyDown}
+                                className='w-full rounded border p-2 text-2xl font-bold text-purple-600'
+                                autoFocus
+                            />
+                        ) : (
+                            <div className='text-2xl font-bold text-purple-600'>{formatCurrency(data.savingsGoal)}</div>
+                        )}
+                        <div className='mt-1 text-xs text-purple-600'>
+                            Clique no ícone de edição para ajustar sua meta
+                        </div>
                     </div>
 
                     <div className={`rounded-lg p-4 ${isNegative ? 'bg-red-50' : 'bg-gray-50'}`}>
@@ -122,6 +178,23 @@ export const Dashboard = ({ onEdit, onReset }: { onEdit: (step: number) => void;
                         </div>
                     </div>
                 </div>
+
+                {hasInstallments && !isNegative && (
+                    <div className='mt-6 rounded-lg border-2 border-green-200 bg-green-50 p-6'>
+                        <div className='text-center'>
+                            <div className='mb-2 flex items-center justify-center gap-2 text-sm font-medium text-green-700'>
+                                <CreditCard size={16} />
+                                Orçamento semanal após quitar parcelamentos
+                            </div>
+                            <div className='text-4xl font-bold text-green-600'>
+                                {formatCurrency(futureWeeklyBudget)}
+                            </div>
+                            <div className='mt-2 text-sm text-green-600'>
+                                Seu orçamento semanal aumentará quando todas as parcelas forem pagas
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <div className='rounded-lg bg-white p-6 shadow-lg'>
@@ -140,6 +213,29 @@ export const Dashboard = ({ onEdit, onReset }: { onEdit: (step: number) => void;
                     })}
                 </div>
             </div>
+
+            {hasInstallments && (
+                <div className='rounded-lg bg-white p-6 shadow-lg'>
+                    <h3 className='mb-4 text-lg font-semibold text-gray-800'>Resumo dos Parcelamentos</h3>
+                    <div className='space-y-3'>
+                        {data.installments.map((installment) => (
+                            <div
+                                key={installment.id}
+                                className='flex items-center justify-between rounded bg-gray-50 p-3'>
+                                <div>
+                                    <span className='font-medium text-gray-700'>{installment.description}</span>
+                                    <span className='ml-2 text-sm text-gray-500'>
+                                        ({installment.remainingInstallments}x)
+                                    </span>
+                                </div>
+                                <span className='font-semibold text-gray-800'>
+                                    {formatCurrency(installment.monthlyAmount)}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

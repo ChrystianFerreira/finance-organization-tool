@@ -1,15 +1,24 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect } from 'react';
 
 import { Dashboard } from '@/components/Dashboard';
 import { ExpensesForm } from '@/components/ExpensesForm';
 import { IncomeForm } from '@/components/IncomeForm';
-import { SavingsGoalForm } from '@/components/SavingsGoalForm';
+import { InstallmentsForm } from '@/components/InstallmentsForm';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 import { FinancialContext } from '../context/FinancialContext';
 import { FinancialData } from '../types';
+import { defaultExpenseCategories } from '../utils/defaultExpenses';
+
+// Valor inicial para novos usuários
+const initialData: FinancialData = {
+    income: { type: 'fixed' },
+    fixedExpenses: defaultExpenseCategories,
+    savingsGoal: 0,
+    installments: []
+};
 
 const FinancialOrganizer = () => {
     const [step, setStep] = useLocalStorage('financial-organizer-step', 0);
@@ -17,22 +26,15 @@ const FinancialOrganizer = () => {
         'financial-organizer-scenario',
         'pessimistic'
     );
-    const [data, setData] = useLocalStorage<FinancialData>('financial-organizer-data', {
-        income: { type: 'fixed' },
-        fixedExpenses: [],
-        savingsGoal: 0
-    });
+    const [data, setData] = useLocalStorage<FinancialData>('financial-organizer-data', initialData);
+
     const updateData = (newData: Partial<FinancialData>) => {
         setData((prev) => ({ ...prev, ...newData }));
     };
 
     const resetData = () => {
         if (confirm('Tem certeza que deseja limpar todos os dados? Esta ação não pode ser desfeita.')) {
-            setData({
-                income: { type: 'fixed' },
-                fixedExpenses: [],
-                savingsGoal: 0
-            });
+            setData(initialData);
             setStep(0);
             setScenario('pessimistic');
         }
@@ -44,8 +46,14 @@ const FinancialOrganizer = () => {
             title: 'Gastos',
             component: <ExpensesForm onReset={resetData} onNext={() => setStep(2)} onBack={() => setStep(0)} />
         },
-        { title: 'Economia', component: <SavingsGoalForm onNext={() => setStep(3)} onBack={() => setStep(1)} /> },
-        { title: 'Resultado', component: <Dashboard onEdit={(editStep) => setStep(editStep)} onReset={resetData} /> }
+        {
+            title: 'Parcelamentos',
+            component: <InstallmentsForm onNext={() => setStep(3)} onBack={() => setStep(1)} />
+        },
+        {
+            title: 'Resultado',
+            component: <Dashboard onEdit={(editStep) => setStep(editStep)} onReset={resetData} />
+        }
     ];
 
     return (

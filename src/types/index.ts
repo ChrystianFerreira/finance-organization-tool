@@ -9,6 +9,14 @@ export type ExpenseCategory = {
     items: ExpenseItem[];
 };
 
+export type Installment = {
+    id: string;
+    description: string;
+    totalAmount: number;
+    remainingInstallments: number;
+    monthlyAmount: number;
+};
+
 export type FinancialData = {
     income: {
         type: 'fixed' | 'variable';
@@ -18,4 +26,5 @@ export type FinancialData = {
     };
     fixedExpenses: ExpenseCategory[];
     savingsGoal: number;
+    installments: Installment[];
 };
