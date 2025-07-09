@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 
 import { Dashboard } from '@/components/Dashboard';
+import { DataControls } from '@/components/DataControls';
 import { ExpensesForm } from '@/components/ExpensesForm';
 import { IncomeForm } from '@/components/IncomeForm';
 import { InstallmentsForm } from '@/components/InstallmentsForm';
@@ -40,6 +41,10 @@ const FinancialOrganizer = () => {
         }
     };
 
+    const handleDataImported = () => {
+        setStep(3); // Ir para o dashboard após importar
+    };
+
     const steps = [
         { title: 'Renda', component: <IncomeForm onNext={() => setStep(1)} /> },
         {
@@ -61,8 +66,15 @@ const FinancialOrganizer = () => {
             <div className='min-h-screen bg-gray-100'>
                 <header className='bg-white shadow-sm'>
                     <div className='mx-auto max-w-6xl px-6 py-4'>
-                        <h1 className='text-3xl font-bold text-gray-800'>Organizador Financeiro</h1>
-                        <p className='mt-1 text-gray-600'>Organize suas finanças de forma simples e eficiente</p>
+                        <div className='flex items-center justify-between'>
+                            <div>
+                                <h1 className='text-3xl font-bold text-gray-800'>Organizador Financeiro</h1>
+                                <p className='mt-1 text-gray-600'>
+                                    Organize suas finanças de forma simples e eficiente
+                                </p>
+                            </div>
+                            <DataControls onDataImported={handleDataImported} />
+                        </div>
                     </div>
                 </header>
 
