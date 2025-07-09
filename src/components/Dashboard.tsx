@@ -85,7 +85,8 @@ export const Dashboard = ({ onEdit, onReset }: { onEdit: (step: number) => void;
                     </div>
                 )}
 
-                <div className='mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5'>
+                {/* Grid de 4 colunas para as demais informações */}
+                <div className='mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4'>
                     <div className='rounded-lg bg-green-50 p-4'>
                         <div className='mb-2 flex items-center justify-between'>
                             <span className='text-sm font-medium text-green-700'>Renda Mensal</span>
@@ -149,15 +150,23 @@ export const Dashboard = ({ onEdit, onReset }: { onEdit: (step: number) => void;
                             Clique no ícone de edição para ajustar sua meta
                         </div>
                     </div>
+                </div>
 
-                    <div className={`rounded-lg p-4 ${isNegative ? 'bg-red-50' : 'bg-gray-50'}`}>
-                        <div className='mb-2 flex items-center justify-between'>
-                            <span className={`text-sm font-medium ${isNegative ? 'text-red-700' : 'text-gray-700'}`}>
-                                Sobra Total
-                            </span>
+                {/* Caixa de orçamento semanal */}
+                <div
+                    className={`mb-6 rounded-lg border-2 p-6 ${isNegative ? 'border-red-200 bg-red-50' : 'border-green-200 bg-green-50'}`}>
+                    <div className='text-center'>
+                        <div className={`mb-2 text-sm font-medium ${isNegative ? 'text-red-700' : 'text-green-700'}`}>
+                            Sobra Total
                         </div>
-                        <div className={`text-2xl font-bold ${isNegative ? 'text-red-600' : 'text-gray-600'}`}>
+                        <div
+                            className={`text-3xl font-bold sm:text-4xl ${isNegative ? 'text-red-600' : 'text-green-600'}`}>
                             {formatCurrency(remaining)}
+                        </div>
+                        <div className={`mt-2 text-sm ${isNegative ? 'text-red-600' : 'text-green-600'}`}>
+                            {isNegative
+                                ? 'Seus gastos excedem sua renda. Revise seus valores acima.'
+                                : 'Valor disponível após todos os compromissos mensais.'}
                         </div>
                     </div>
                 </div>
@@ -168,7 +177,8 @@ export const Dashboard = ({ onEdit, onReset }: { onEdit: (step: number) => void;
                         <div className={`mb-2 text-sm font-medium ${isNegative ? 'text-red-700' : 'text-yellow-700'}`}>
                             {isNegative ? 'ATENÇÃO: Orçamento no vermelho!' : 'Orçamento semanal para gastos livres'}
                         </div>
-                        <div className={`text-4xl font-bold ${isNegative ? 'text-red-600' : 'text-yellow-600'}`}>
+                        <div
+                            className={`text-3xl font-bold sm:text-4xl ${isNegative ? 'text-red-600' : 'text-yellow-600'}`}>
                             {formatCurrency(weeklyBudget)}
                         </div>
                         <div className={`mt-2 text-sm ${isNegative ? 'text-red-600' : 'text-yellow-600'}`}>
@@ -186,7 +196,7 @@ export const Dashboard = ({ onEdit, onReset }: { onEdit: (step: number) => void;
                                 <CreditCard size={16} />
                                 Orçamento semanal após quitar parcelamentos
                             </div>
-                            <div className='text-4xl font-bold text-green-600'>
+                            <div className='text-3xl font-bold text-green-600 sm:text-4xl'>
                                 {formatCurrency(futureWeeklyBudget)}
                             </div>
                             <div className='mt-2 text-sm text-green-600'>
