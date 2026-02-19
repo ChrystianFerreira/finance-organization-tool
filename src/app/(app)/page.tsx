@@ -1,4 +1,4 @@
-import FinancialOrganizer from '../components/FinancialOrganizer';
+import FinancialOrganizer from '@/components/FinancialOrganizer';
 
 const Page = () => {
     return <FinancialOrganizer />;

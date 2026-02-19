@@ -3,23 +3,24 @@ import { useState } from 'react';
 import { useFinancial } from '@/context/FinancialContext';
 import { parseCurrency } from '@/utils';
 
+import { CurrencyInput } from './CurrencyInput';
 import { DollarSign } from 'lucide-react';
 
 export const IncomeForm = ({ onNext }: { onNext: () => void }) => {
     const { data, updateData } = useFinancial();
     const [incomeType, setIncomeType] = useState<'fixed' | 'variable'>(data.income.type);
-    const [fixedAmount, setFixedAmount] = useState(data.income.fixedAmount?.toString() || '');
-    const [minAmount, setMinAmount] = useState(data.income.minAmount?.toString() || '');
-    const [maxAmount, setMaxAmount] = useState(data.income.maxAmount?.toString() || '');
+    const [fixedAmount, setFixedAmount] = useState<number>(data.income.fixedAmount || 0);
+    const [minAmount, setMinAmount] = useState<number>(data.income.minAmount || 0);
+    const [maxAmount, setMaxAmount] = useState<number>(data.income.maxAmount || 0);
 
     const handleSubmit = () => {
         const incomeData = {
             type: incomeType,
             ...(incomeType === 'fixed'
-                ? { fixedAmount: parseCurrency(fixedAmount) }
+                ? { fixedAmount }
                 : {
-                      minAmount: parseCurrency(minAmount),
-                      maxAmount: parseCurrency(maxAmount)
+                      minAmount,
+                      maxAmount
                   })
         };
 
@@ -27,10 +28,7 @@ export const IncomeForm = ({ onNext }: { onNext: () => void }) => {
         onNext();
     };
 
-    const isValid =
-        incomeType === 'fixed'
-            ? parseCurrency(fixedAmount) > 0
-            : parseCurrency(minAmount) > 0 && parseCurrency(maxAmount) > parseCurrency(minAmount);
+    const isValid = incomeType === 'fixed' ? fixedAmount > 0 : minAmount > 0 && maxAmount > minAmount;
 
     return (
         <div className='mx-auto max-w-2xl rounded-lg bg-white p-6 shadow-lg'>
@@ -67,10 +65,9 @@ export const IncomeForm = ({ onNext }: { onNext: () => void }) => {
                 {incomeType === 'fixed' ? (
                     <div>
                         <label className='mb-2 block text-sm font-medium text-gray-700'>Valor mensal líquido</label>
-                        <input
-                            type='text'
+                        <CurrencyInput
                             value={fixedAmount}
-                            onChange={(e) => setFixedAmount(e.target.value)}
+                            onValueChange={(val) => setFixedAmount(typeof val === 'number' ? val : 0)}
                             placeholder='R$ 0,00'
                             className='w-full rounded-lg border border-gray-300 p-3 focus:border-green-500 focus:ring-2 focus:ring-green-500'
                         />
@@ -79,10 +76,9 @@ export const IncomeForm = ({ onNext }: { onNext: () => void }) => {
                     <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                         <div>
                             <label className='mb-2 block text-sm font-medium text-gray-700'>Renda mínima mensal</label>
-                            <input
-                                type='text'
+                            <CurrencyInput
                                 value={minAmount}
-                                onChange={(e) => setMinAmount(e.target.value)}
+                                onValueChange={(val) => setMinAmount(typeof val === 'number' ? val : 0)}
                                 placeholder='R$ 0,00'
                                 className='w-full rounded-lg border border-gray-300 p-3 focus:border-green-500 focus:ring-2 focus:ring-green-500'
                             />
@@ -90,10 +86,9 @@ export const IncomeForm = ({ onNext }: { onNext: () => void }) => {
 
                         <div>
                             <label className='mb-2 block text-sm font-medium text-gray-700'>Renda máxima mensal</label>
-                            <input
-                                type='text'
+                            <CurrencyInput
                                 value={maxAmount}
-                                onChange={(e) => setMaxAmount(e.target.value)}
+                                onValueChange={(val) => setMaxAmount(typeof val === 'number' ? val : 0)}
                                 placeholder='R$ 0,00'
                                 className='w-full rounded-lg border border-gray-300 p-3 focus:border-green-500 focus:ring-2 focus:ring-green-500'
                             />
