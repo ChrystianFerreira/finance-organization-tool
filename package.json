@@ -1,8 +1,7 @@
 {
     "name": "finance-organization-tool",
     "version": "0.1.0",
-    "private": false,
-    "license": "MIT",
+    "private": true,
     "scripts": {
         "dev": "next dev --turbopack",
         "build": "next build",
