@@ -2,11 +2,12 @@
 
 import { type ReactNode } from 'react';
 
-import { FinancialContext } from '@/context/FinancialContext';
-import { TrackingContext } from '@/context/TrackingContext';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { FinancialData, TrackingData } from '@/types';
-import { defaultExpenseCategories } from '@/utils/defaultExpenses';
+import { FinancialContext } from '@/modules/common/context/FinancialContext';
+import { useLocalStorage } from '@/modules/common/hooks/useLocalStorage';
+import { FinancialData } from '@/modules/common/types';
+import { defaultExpenseCategories } from '@/modules/common/utils/defaultExpenses';
+import { TrackingContext } from '@/modules/expenses/context/TrackingContext';
+import { TrackingData } from '@/modules/expenses/types';
 
 const initialData: FinancialData = {
     income: { type: 'fixed' },
