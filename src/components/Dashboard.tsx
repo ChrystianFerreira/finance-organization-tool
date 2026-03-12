@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Calculator, CreditCard, Edit3, PiggyBank, TrendingDown, TrendingUp, Upload } from 'lucide-react';
 
@@ -6,7 +6,7 @@ import { SpendingProgress } from '@/components/dashboard/SpendingProgress';
 import { TrackingModal } from '@/components/tracking/TrackingModal';
 import { useFinancial } from '@/context/FinancialContext';
 import { useTracking } from '@/hooks/useTracking';
-import { calculateTotalExpenses, calculateWeeklyBudget, formatCurrency } from '@/utils';
+import { calculateTotalExpenses, calculateWeeklyBudget, formatCurrency, getSelectableMonths } from '@/utils';
 
 import { CurrencyInput } from './CurrencyInput';
 
@@ -17,9 +17,16 @@ export const Dashboard = ({ onEdit, onReset }: { onEdit: (step: number) => void;
     const [isEditingSavings, setIsEditingSavings] = useState(false);
     const [savingsInput, setSavingsInput] = useState<number>(data.savingsGoal);
 
-    const currentMonth = new Date().toISOString().substring(0, 7);
     const availableMonths = getAvailableMonths();
-    const [selectedMonth, setSelectedMonth] = useState(availableMonths[0] || currentMonth);
+    const selectableMonths = getSelectableMonths(availableMonths);
+    const [selectedMonth, setSelectedMonth] = useState(selectableMonths[0]);
+
+    useEffect(() => {
+        if (!selectableMonths.includes(selectedMonth)) {
+            setSelectedMonth(selectableMonths[0]);
+        }
+    }, [selectableMonths, selectedMonth]);
+
     const spentByItem = getSpentByItem(selectedMonth);
     const weeklyBudgetSpent = getWeeklyBudgetSpent(selectedMonth);
     const unplannedSpent = getUnplannedSpent(selectedMonth);
@@ -267,26 +274,24 @@ export const Dashboard = ({ onEdit, onReset }: { onEdit: (step: number) => void;
                 </div>
             )}
 
-            {availableMonths.length > 0 && (
-                <div className='flex items-center gap-3'>
-                    <label className='text-sm font-medium text-gray-600'>Mês do acompanhamento:</label>
-                    <select
-                        value={selectedMonth}
-                        onChange={(e) => setSelectedMonth(e.target.value)}
-                        className='rounded-md border px-3 py-1.5 text-sm capitalize text-gray-700'>
-                        {availableMonths.map((m) => {
-                            const [year, month] = m.split('-');
-                            const date = new Date(parseInt(year), parseInt(month) - 1);
+            <div className='flex items-center gap-3'>
+                <label className='text-sm font-medium text-gray-600'>Mês do acompanhamento:</label>
+                <select
+                    value={selectedMonth}
+                    onChange={(e) => setSelectedMonth(e.target.value)}
+                    className='rounded-md border px-3 py-1.5 text-sm capitalize text-gray-700'>
+                    {selectableMonths.map((m) => {
+                        const [year, month] = m.split('-');
+                        const date = new Date(parseInt(year), parseInt(month) - 1);
 
-                            return (
-                                <option key={m} value={m}>
-                                    {date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
-                                </option>
-                            );
-                        })}
-                    </select>
-                </div>
-            )}
+                        return (
+                            <option key={m} value={m}>
+                                {date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
+                            </option>
+                        );
+                    })}
+                </select>
+            </div>
 
             <SpendingProgress
                 categories={data.fixedExpenses}
@@ -296,7 +301,7 @@ export const Dashboard = ({ onEdit, onReset }: { onEdit: (step: number) => void;
                 unplannedSpent={unplannedSpent}
             />
 
-            {availableMonths.length > 0 && (() => {
+            {availableMonths.includes(selectedMonth) && (() => {
                 const totalActualSpending =
                     Object.values(spentByItem).reduce((sum, v) => sum + v, 0) +
                     weeklyBudgetSpent +

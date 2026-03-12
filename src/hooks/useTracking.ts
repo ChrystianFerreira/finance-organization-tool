@@ -1,5 +1,5 @@
-import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { CategorizedTransaction, CsvTransaction, TitleMapping, TrackingData } from '@/types';
+import { useTrackingContext } from '@/context/TrackingContext';
+import { CategorizedTransaction, CsvTransaction, TitleMapping } from '@/types';
 
 export type WorkingTransaction = CsvTransaction & {
     suggestedCategoryName: string | null;
@@ -8,16 +8,8 @@ export type WorkingTransaction = CsvTransaction & {
     isAutoMapped: boolean;
 };
 
-const INITIAL_TRACKING: TrackingData = {
-    transactions: [],
-    titleMappings: []
-};
-
 export function useTracking() {
-    const [trackingData, setTrackingData] = useLocalStorage<TrackingData>(
-        'financial-organizer-tracking',
-        INITIAL_TRACKING
-    );
+    const { trackingData, setTrackingData } = useTrackingContext();
 
     const applyAutoMappings = (transactions: CsvTransaction[]): WorkingTransaction[] => {
         return transactions.map((txn) => {
@@ -82,6 +74,39 @@ export function useTracking() {
             .reduce((sum, txn) => sum + txn.amount, 0);
     };
 
+    const filterNewTransactions = (
+        parsed: CsvTransaction[]
+    ): { newTransactions: CsvTransaction[]; alreadyImported: CsvTransaction[] } => {
+        const existingCounts = new Map<string, number>();
+        for (const txn of trackingData.transactions) {
+            if (txn.fingerprint) {
+                existingCounts.set(txn.fingerprint, (existingCounts.get(txn.fingerprint) || 0) + 1);
+            }
+        }
+
+        const newTransactions: CsvTransaction[] = [];
+        const alreadyImported: CsvTransaction[] = [];
+
+        for (const txn of parsed) {
+            const remaining = existingCounts.get(txn.fingerprint) || 0;
+            if (remaining > 0) {
+                alreadyImported.push(txn);
+                existingCounts.set(txn.fingerprint, remaining - 1);
+            } else {
+                newTransactions.push(txn);
+            }
+        }
+
+        return { newTransactions, alreadyImported };
+    };
+
+    const clearMonth = (month: string) => {
+        setTrackingData((prev) => ({
+            ...prev,
+            transactions: prev.transactions.filter((txn) => !txn.date.startsWith(month))
+        }));
+    };
+
     const getAvailableMonths = (): string[] => {
         const months = new Set<string>();
         for (const txn of trackingData.transactions) {
@@ -97,6 +122,8 @@ export function useTracking() {
         trackingData,
         applyAutoMappings,
         saveBatch,
+        filterNewTransactions,
+        clearMonth,
         getSpentByItem,
         getWeeklyBudgetSpent,
         getUnplannedSpent,

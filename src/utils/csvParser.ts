@@ -27,7 +27,8 @@ export function parseNubankCsv(rawText: string): ParseResult {
 
         if (isNaN(amount)) continue;
 
-        const transaction: CsvTransaction = { date, title, amount };
+        const fingerprint = `${date}|${title.toLowerCase().trim()}|${amount.toFixed(2)}`;
+        const transaction: CsvTransaction = { date, title, amount, fingerprint };
 
         if (amount < 0) {
             skipped.push(transaction);

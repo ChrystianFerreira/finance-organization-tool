@@ -67,22 +67,10 @@ export const TransactionCard = ({
                 onSelect={(selection) =>
                     onDecide({
                         ...selection,
-                        saveMapping: decision?.saveMapping ?? !isAutoMapped
+                        saveMapping: decision?.saveMapping ?? false
                     })
                 }
             />
-
-            {decision && decision.categoryName !== 'skipped' && (
-                <label className='mt-3 flex items-center gap-2 text-sm text-gray-500'>
-                    <input
-                        type='checkbox'
-                        checked={decision.saveMapping}
-                        onChange={(e) => onDecide({ ...decision, saveMapping: e.target.checked })}
-                        className='accent-green-600'
-                    />
-                    Lembrar esta decisão
-                </label>
-            )}
         </div>
     );
 };
