@@ -2,8 +2,9 @@ import { useState } from 'react';
 
 import { useFinancial } from '@/context/FinancialContext';
 import { ExpenseCategory } from '@/types';
-import { calculateTotalExpenses, parseCurrency } from '@/utils';
+import { calculateTotalExpenses } from '@/utils';
 
+import { CurrencyInput } from './CurrencyInput';
 import { Plus, Receipt, Trash2 } from 'lucide-react';
 
 const defaultCategories: ExpenseCategory[] = [
@@ -50,8 +51,7 @@ export const ExpensesForm = ({
         if (field === 'name') {
             newExpenses[categoryIndex].items[itemIndex].name = value as string;
         } else {
-            newExpenses[categoryIndex].items[itemIndex].amount =
-                typeof value === 'string' ? parseCurrency(value) : value;
+            newExpenses[categoryIndex].items[itemIndex].amount = typeof value === 'number' ? value : 0;
         }
         setExpenses(newExpenses);
     };
@@ -101,13 +101,17 @@ export const ExpensesForm = ({
                                         }
                                         className='flex-1 rounded border border-gray-300 p-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500'
                                     />
-                                    <input
-                                        type='text'
-                                        placeholder='R$ 0,00'
-                                        value={item.amount > 0 ? item.amount.toString() : ''}
-                                        onChange={(e) =>
-                                            updateExpenseItem(categoryIndex, itemIndex, 'amount', e.target.value)
+                                    <CurrencyInput
+                                        value={typeof item.amount === 'number' ? item.amount : 0}
+                                        onValueChange={(val) =>
+                                            updateExpenseItem(
+                                                categoryIndex,
+                                                itemIndex,
+                                                'amount',
+                                                typeof val === 'number' ? val : 0
+                                            )
                                         }
+                                        placeholder='R$ 0,00'
                                         className='w-32 rounded border border-gray-300 p-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500'
                                     />
                                     <button
@@ -134,23 +138,29 @@ export const ExpensesForm = ({
                     </div>
                 </div>
 
-                <div className='flex gap-4'>
+                <div className='mt-8 flex items-center justify-between'>
                     <button
                         onClick={onBack}
-                        className='flex-1 rounded-lg bg-gray-500 px-4 py-3 font-semibold text-white transition-colors hover:bg-gray-600'>
+                        className='rounded-lg border border-gray-300 px-4 py-2 text-gray-600 hover:text-gray-800'>
                         Voltar
                     </button>
+                    <div className='text-lg font-semibold text-gray-700'>
+                        Total:{' '}
+                        <span className='text-blue-600'>
+                            {totalExpenses.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                        </span>
+                    </div>
                     <button
                         onClick={handleSubmit}
-                        className='flex-1 rounded-lg bg-blue-600 px-4 py-3 font-semibold text-white transition-colors hover:bg-blue-700'>
+                        className='rounded-lg bg-blue-600 px-6 py-2 font-semibold text-white transition-colors hover:bg-blue-700'>
                         Continuar
                     </button>
                 </div>
-                <div className='mt-6 text-center'>
-                    <button onClick={onReset} className='text-sm font-medium text-red-600 hover:text-red-800'>
-                        Limpar todos os dados e recomeçar
-                    </button>
-                </div>
+                <button
+                    onClick={onReset}
+                    className='mt-4 w-full rounded-lg border border-red-200 bg-red-50 py-2 text-red-600 hover:bg-red-100'>
+                    Limpar todos os dados
+                </button>
             </div>
         </div>
     );

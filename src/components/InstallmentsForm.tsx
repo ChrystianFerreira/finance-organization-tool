@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { useFinancial } from '@/context/FinancialContext';
 import { Installment } from '@/types';
 
+import { CurrencyInput } from './CurrencyInput';
 import { v4 as uuidv4 } from 'uuid';
 
 type InstallmentsFormProps = {
@@ -15,7 +16,7 @@ type InstallmentsFormProps = {
 export const InstallmentsForm = ({ onNext, onBack }: InstallmentsFormProps) => {
     const { data, updateData } = useFinancial();
     const [description, setDescription] = useState('');
-    const [totalAmount, setTotalAmount] = useState('');
+    const [totalAmount, setTotalAmount] = useState(0);
     const [remainingInstallments, setRemainingInstallments] = useState('');
 
     const handleAddInstallment = () => {
@@ -37,7 +38,7 @@ export const InstallmentsForm = ({ onNext, onBack }: InstallmentsFormProps) => {
 
         // Reset form
         setDescription('');
-        setTotalAmount('');
+        setTotalAmount(0);
         setRemainingInstallments('');
     };
 
@@ -74,12 +75,11 @@ export const InstallmentsForm = ({ onNext, onBack }: InstallmentsFormProps) => {
 
                 <div>
                     <label className='mb-1 block text-sm font-medium text-gray-700'>Valor Total</label>
-                    <input
-                        type='number'
+                    <CurrencyInput
                         value={totalAmount}
-                        onChange={(e) => setTotalAmount(e.target.value)}
+                        onValueChange={(val) => setTotalAmount(typeof val === 'number' ? val : 0)}
+                        placeholder='R$ 0,00'
                         className='w-full rounded-md border p-2'
-                        placeholder='2000'
                     />
                 </div>
 

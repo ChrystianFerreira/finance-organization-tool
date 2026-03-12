@@ -1,14 +1,35 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
+import { Calculator, CreditCard, Edit3, PiggyBank, TrendingDown, TrendingUp, Upload } from 'lucide-react';
+
+import { SpendingProgress } from '@/components/dashboard/SpendingProgress';
+import { TrackingModal } from '@/components/tracking/TrackingModal';
 import { useFinancial } from '@/context/FinancialContext';
-import { calculateTotalExpenses, calculateWeeklyBudget, formatCurrency, parseCurrency } from '@/utils';
+import { useTracking } from '@/hooks/useTracking';
+import { calculateTotalExpenses, calculateWeeklyBudget, formatCurrency, getSelectableMonths } from '@/utils';
 
-import { Calculator, CreditCard, Edit3, Target, TrendingDown, TrendingUp } from 'lucide-react';
+import { CurrencyInput } from './CurrencyInput';
 
 export const Dashboard = ({ onEdit, onReset }: { onEdit: (step: number) => void; onReset: () => void }) => {
     const { data, updateData, scenario, setScenario } = useFinancial();
+    const { getSpentByItem, getWeeklyBudgetSpent, getUnplannedSpent, getAvailableMonths } = useTracking();
+    const [isTrackingOpen, setIsTrackingOpen] = useState(false);
     const [isEditingSavings, setIsEditingSavings] = useState(false);
-    const [savingsInput, setSavingsInput] = useState(data.savingsGoal.toString());
+    const [savingsInput, setSavingsInput] = useState<number>(data.savingsGoal);
+
+    const availableMonths = getAvailableMonths();
+    const selectableMonths = getSelectableMonths(availableMonths);
+    const [selectedMonth, setSelectedMonth] = useState(selectableMonths[0]);
+
+    useEffect(() => {
+        if (!selectableMonths.includes(selectedMonth)) {
+            setSelectedMonth(selectableMonths[0]);
+        }
+    }, [selectableMonths, selectedMonth]);
+
+    const spentByItem = getSpentByItem(selectedMonth);
+    const weeklyBudgetSpent = getWeeklyBudgetSpent(selectedMonth);
+    const unplannedSpent = getUnplannedSpent(selectedMonth);
 
     const totalExpenses = calculateTotalExpenses(data.fixedExpenses);
     const totalMonthlyInstallments = data.installments?.reduce((acc, curr) => acc + curr.monthlyAmount, 0) || 0;
@@ -22,9 +43,7 @@ export const Dashboard = ({ onEdit, onReset }: { onEdit: (step: number) => void;
     };
 
     const handleSavingsBlur = () => {
-        const newValue = parseCurrency(savingsInput);
-        updateData({ savingsGoal: newValue });
-        setSavingsInput(newValue.toString());
+        updateData({ savingsGoal: savingsInput });
         setIsEditingSavings(false);
     };
 
@@ -33,7 +52,7 @@ export const Dashboard = ({ onEdit, onReset }: { onEdit: (step: number) => void;
             handleSavingsBlur();
         } else if (e.key === 'Escape') {
             setIsEditingSavings(false);
-            setSavingsInput(data.savingsGoal.toString());
+            setSavingsInput(data.savingsGoal);
         }
     };
 
@@ -53,9 +72,18 @@ export const Dashboard = ({ onEdit, onReset }: { onEdit: (step: number) => void;
     return (
         <div className='mx-auto max-w-4xl space-y-6 p-6'>
             <div className='rounded-lg bg-white p-6 shadow-lg'>
-                <div className='mb-6 flex items-center gap-3'>
-                    <Calculator className='text-green-600' size={24} />
-                    <h2 className='text-2xl font-bold text-gray-800'>Seu Orçamento Mensal</h2>
+                <div className='mb-6 flex items-center justify-between'>
+                    <div className='flex items-center gap-3'>
+                        <Calculator className='text-green-600' size={24} />
+                        <h2 className='text-2xl font-bold text-gray-800'>Seu Orçamento Mensal</h2>
+                    </div>
+                    <button
+                        type='button'
+                        onClick={() => setIsTrackingOpen(true)}
+                        className='flex items-center gap-2 rounded-md bg-green-50 px-3 py-2 text-sm font-medium text-green-700 hover:bg-green-100'>
+                        <Upload size={16} />
+                        Acompanhamento de gastos
+                    </button>
                 </div>
 
                 {isVariableIncome && (
@@ -134,10 +162,9 @@ export const Dashboard = ({ onEdit, onReset }: { onEdit: (step: number) => void;
                             </button>
                         </div>
                         {isEditingSavings ? (
-                            <input
-                                type='text'
+                            <CurrencyInput
                                 value={savingsInput}
-                                onChange={(e) => setSavingsInput(e.target.value)}
+                                onValueChange={(val) => setSavingsInput(typeof val === 'number' ? val : 0)}
                                 onBlur={handleSavingsBlur}
                                 onKeyDown={handleSavingsKeyDown}
                                 className='w-full rounded border p-2 text-2xl font-bold text-purple-600'
@@ -246,6 +273,100 @@ export const Dashboard = ({ onEdit, onReset }: { onEdit: (step: number) => void;
                     </div>
                 </div>
             )}
+
+            <div className='flex items-center gap-3'>
+                <label className='text-sm font-medium text-gray-600'>Mês do acompanhamento:</label>
+                <select
+                    value={selectedMonth}
+                    onChange={(e) => setSelectedMonth(e.target.value)}
+                    className='rounded-md border px-3 py-1.5 text-sm capitalize text-gray-700'>
+                    {selectableMonths.map((m) => {
+                        const [year, month] = m.split('-');
+                        const date = new Date(parseInt(year), parseInt(month) - 1);
+
+                        return (
+                            <option key={m} value={m}>
+                                {date.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
+                            </option>
+                        );
+                    })}
+                </select>
+            </div>
+
+            <SpendingProgress
+                categories={data.fixedExpenses}
+                spentByItem={spentByItem}
+                weeklyBudget={weeklyBudget}
+                weeklyBudgetSpent={weeklyBudgetSpent}
+                unplannedSpent={unplannedSpent}
+            />
+
+            {availableMonths.includes(selectedMonth) && (() => {
+                const totalActualSpending =
+                    Object.values(spentByItem).reduce((sum, v) => sum + v, 0) +
+                    weeklyBudgetSpent +
+                    unplannedSpent;
+                const realSavings = currentIncome - totalActualSpending - totalMonthlyInstallments;
+                const hasGoal = data.savingsGoal > 0;
+                const difference = realSavings - data.savingsGoal;
+                const percentage = hasGoal ? (difference / data.savingsGoal) * 100 : 0;
+                const isAboveGoal = realSavings >= data.savingsGoal;
+
+                return (
+                    <div className='rounded-xl bg-white p-6 shadow-sm'>
+                        <div className='mb-4 flex items-center gap-2'>
+                            <PiggyBank className='text-purple-600' size={20} />
+                            <h2 className='text-xl font-bold text-gray-800'>Economia Mensal Real</h2>
+                        </div>
+
+                        <div className='space-y-3'>
+                            <div className='flex items-center justify-between rounded-lg bg-purple-50 px-4 py-3'>
+                                <span className='text-sm font-medium text-purple-700'>Meta de economia</span>
+                                <span className='text-lg font-bold text-purple-600'>
+                                    {formatCurrency(data.savingsGoal)}
+                                </span>
+                            </div>
+
+                            <div className='flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3'>
+                                <span className='text-sm font-medium text-gray-600'>Gastos reais do mês</span>
+                                <span className='text-lg font-bold text-gray-800'>
+                                    {formatCurrency(totalActualSpending)}
+                                </span>
+                            </div>
+
+                            <div
+                                className={`flex items-center justify-between rounded-lg border-2 px-4 py-4 ${
+                                    isAboveGoal
+                                        ? 'border-green-200 bg-green-50'
+                                        : 'border-red-200 bg-red-50'
+                                }`}>
+                                <div>
+                                    <span
+                                        className={`text-sm font-medium ${isAboveGoal ? 'text-green-700' : 'text-red-700'}`}>
+                                        Economia real
+                                    </span>
+                                    {hasGoal && (
+                                        <p
+                                            className={`mt-0.5 text-xs ${isAboveGoal ? 'text-green-600' : 'text-red-600'}`}>
+                                            {difference === 0
+                                                ? 'Na meta!'
+                                                : difference > 0
+                                                  ? `+${percentage.toFixed(0)}% acima da meta`
+                                                  : `${percentage.toFixed(0)}% abaixo da meta`}
+                                        </p>
+                                    )}
+                                </div>
+                                <span
+                                    className={`text-2xl font-bold ${isAboveGoal ? 'text-green-600' : 'text-red-600'}`}>
+                                    {formatCurrency(realSavings)}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })()}
+
+            <TrackingModal isOpen={isTrackingOpen} onClose={() => setIsTrackingOpen(false)} />
         </div>
     );
 };

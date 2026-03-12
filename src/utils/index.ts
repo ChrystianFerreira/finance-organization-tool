@@ -22,3 +22,21 @@ export const calculateWeeklyBudget = (income: number, expenses: number, savings:
 
     return remaining / 5; // 5 semanas por mês
 };
+
+export const getSelectableMonths = (monthsWithData: string[]): string[] => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const currentMonth = now.getMonth();
+
+    const months = new Set<string>();
+
+    for (let m = 0; m <= currentMonth; m++) {
+        months.add(`${year}-${String(m + 1).padStart(2, '0')}`);
+    }
+
+    for (const m of monthsWithData) {
+        months.add(m);
+    }
+
+    return Array.from(months).sort().reverse();
+};
