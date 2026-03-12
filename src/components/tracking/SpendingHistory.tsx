@@ -1,9 +1,9 @@
 'use client';
 
-import { ChevronDown } from 'lucide-react';
-
 import { useTracking } from '@/hooks/useTracking';
 import { formatCurrency } from '@/utils';
+
+import { ChevronDown } from 'lucide-react';
 
 type SpendingHistoryProps = {
     month: string;
@@ -35,9 +35,7 @@ export const SpendingHistory = ({ month }: SpendingHistoryProps) => {
 
     return (
         <div className='flex flex-col gap-3'>
-            <h3 className='text-sm font-semibold text-gray-600'>
-                Transações importadas ({monthTransactions.length})
-            </h3>
+            <h3 className='text-sm font-semibold text-gray-600'>Transações importadas ({monthTransactions.length})</h3>
             {Array.from(grouped.entries()).map(([label, txns]) => (
                 <details key={label} className='rounded-lg border'>
                     <summary className='flex cursor-pointer items-center justify-between px-4 py-3 text-sm'>

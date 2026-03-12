@@ -59,9 +59,7 @@ const FinancialOrganizer = () => {
                     <div className='flex items-center justify-between'>
                         <div>
                             <h1 className='text-3xl font-bold text-gray-800'>Organizador Financeiro</h1>
-                            <p className='mt-1 text-gray-600'>
-                                Organize suas finanças de forma simples e eficiente
-                            </p>
+                            <p className='mt-1 text-gray-600'>Organize suas finanças de forma simples e eficiente</p>
                         </div>
                         <DataControls onDataImported={handleDataImported} />
                     </div>
@@ -77,9 +75,7 @@ const FinancialOrganizer = () => {
                                     <div key={index} className='flex items-center'>
                                         <div
                                             className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium ${
-                                                index <= step
-                                                    ? 'bg-green-600 text-white'
-                                                    : 'bg-gray-200 text-gray-600'
+                                                index <= step ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600'
                                             }`}>
                                             {index + 1}
                                         </div>

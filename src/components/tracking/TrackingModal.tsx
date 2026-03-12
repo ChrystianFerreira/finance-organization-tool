@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from 'react';
 
-import { Trash2, Upload, X } from 'lucide-react';
-
 import { useTracking } from '@/hooks/useTracking';
 import { getSelectableMonths } from '@/utils';
 
 import { ImportWizardModal } from './ImportWizardModal';
 import { SpendingHistory } from './SpendingHistory';
+import { Trash2, Upload, X } from 'lucide-react';
 
 type TrackingModalProps = {
     isOpen: boolean;
@@ -73,7 +72,7 @@ export const TrackingModal = ({ isOpen, onClose }: TrackingModalProps) => {
                             <select
                                 value={selectedMonth}
                                 onChange={(e) => setSelectedMonth(e.target.value)}
-                                className='rounded-md border px-3 py-2 text-sm capitalize text-gray-700'>
+                                className='rounded-md border px-3 py-2 text-sm text-gray-700 capitalize'>
                                 {selectableMonths.map((m) => (
                                     <option key={m} value={m}>
                                         {formatMonthLabel(m)}

@@ -19,10 +19,7 @@ function ProgressBar({ spent, budgeted }: { spent: number; budgeted: number }) {
     return (
         <div className='flex items-center gap-3'>
             <div className='h-2 flex-1 rounded-full bg-gray-200'>
-                <div
-                    className={`h-2 rounded-full transition-all ${color}`}
-                    style={{ width: `${percentage}%` }}
-                />
+                <div className={`h-2 rounded-full transition-all ${color}`} style={{ width: `${percentage}%` }} />
             </div>
             <span className='w-36 text-right text-xs text-gray-500'>
                 {formatCurrency(spent)} / {formatCurrency(budgeted)}
@@ -38,8 +35,7 @@ export const SpendingProgress = ({
     weeklyBudgetSpent,
     unplannedSpent
 }: SpendingProgressProps) => {
-    const hasAnySpending =
-        Object.values(spentByItem).some((v) => v > 0) || weeklyBudgetSpent > 0 || unplannedSpent > 0;
+    const hasAnySpending = Object.values(spentByItem).some((v) => v > 0) || weeklyBudgetSpent > 0 || unplannedSpent > 0;
 
     if (!hasAnySpending) return null;
 

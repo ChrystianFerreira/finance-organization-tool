@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
 
-import { Calculator, CreditCard, Edit3, PiggyBank, TrendingDown, TrendingUp, Upload } from 'lucide-react';
-
 import { SpendingProgress } from '@/components/dashboard/SpendingProgress';
 import { TrackingModal } from '@/components/tracking/TrackingModal';
 import { useFinancial } from '@/context/FinancialContext';
@@ -9,6 +7,7 @@ import { useTracking } from '@/hooks/useTracking';
 import { calculateTotalExpenses, calculateWeeklyBudget, formatCurrency, getSelectableMonths } from '@/utils';
 
 import { CurrencyInput } from './CurrencyInput';
+import { Calculator, CreditCard, Edit3, PiggyBank, TrendingDown, TrendingUp, Upload } from 'lucide-react';
 
 export const Dashboard = ({ onEdit, onReset }: { onEdit: (step: number) => void; onReset: () => void }) => {
     const { data, updateData, scenario, setScenario } = useFinancial();
@@ -279,7 +278,7 @@ export const Dashboard = ({ onEdit, onReset }: { onEdit: (step: number) => void;
                 <select
                     value={selectedMonth}
                     onChange={(e) => setSelectedMonth(e.target.value)}
-                    className='rounded-md border px-3 py-1.5 text-sm capitalize text-gray-700'>
+                    className='rounded-md border px-3 py-1.5 text-sm text-gray-700 capitalize'>
                     {selectableMonths.map((m) => {
                         const [year, month] = m.split('-');
                         const date = new Date(parseInt(year), parseInt(month) - 1);
@@ -301,70 +300,67 @@ export const Dashboard = ({ onEdit, onReset }: { onEdit: (step: number) => void;
                 unplannedSpent={unplannedSpent}
             />
 
-            {availableMonths.includes(selectedMonth) && (() => {
-                const totalActualSpending =
-                    Object.values(spentByItem).reduce((sum, v) => sum + v, 0) +
-                    weeklyBudgetSpent +
-                    unplannedSpent;
-                const realSavings = currentIncome - totalActualSpending - totalMonthlyInstallments;
-                const hasGoal = data.savingsGoal > 0;
-                const difference = realSavings - data.savingsGoal;
-                const percentage = hasGoal ? (difference / data.savingsGoal) * 100 : 0;
-                const isAboveGoal = realSavings >= data.savingsGoal;
+            {availableMonths.includes(selectedMonth) &&
+                (() => {
+                    const totalActualSpending =
+                        Object.values(spentByItem).reduce((sum, v) => sum + v, 0) + weeklyBudgetSpent + unplannedSpent;
+                    const realSavings = currentIncome - totalActualSpending - totalMonthlyInstallments;
+                    const hasGoal = data.savingsGoal > 0;
+                    const difference = realSavings - data.savingsGoal;
+                    const percentage = hasGoal ? (difference / data.savingsGoal) * 100 : 0;
+                    const isAboveGoal = realSavings >= data.savingsGoal;
 
-                return (
-                    <div className='rounded-xl bg-white p-6 shadow-sm'>
-                        <div className='mb-4 flex items-center gap-2'>
-                            <PiggyBank className='text-purple-600' size={20} />
-                            <h2 className='text-xl font-bold text-gray-800'>Economia Mensal Real</h2>
-                        </div>
-
-                        <div className='space-y-3'>
-                            <div className='flex items-center justify-between rounded-lg bg-purple-50 px-4 py-3'>
-                                <span className='text-sm font-medium text-purple-700'>Meta de economia</span>
-                                <span className='text-lg font-bold text-purple-600'>
-                                    {formatCurrency(data.savingsGoal)}
-                                </span>
+                    return (
+                        <div className='rounded-xl bg-white p-6 shadow-sm'>
+                            <div className='mb-4 flex items-center gap-2'>
+                                <PiggyBank className='text-purple-600' size={20} />
+                                <h2 className='text-xl font-bold text-gray-800'>Economia Mensal Real</h2>
                             </div>
 
-                            <div className='flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3'>
-                                <span className='text-sm font-medium text-gray-600'>Gastos reais do mês</span>
-                                <span className='text-lg font-bold text-gray-800'>
-                                    {formatCurrency(totalActualSpending)}
-                                </span>
-                            </div>
-
-                            <div
-                                className={`flex items-center justify-between rounded-lg border-2 px-4 py-4 ${
-                                    isAboveGoal
-                                        ? 'border-green-200 bg-green-50'
-                                        : 'border-red-200 bg-red-50'
-                                }`}>
-                                <div>
-                                    <span
-                                        className={`text-sm font-medium ${isAboveGoal ? 'text-green-700' : 'text-red-700'}`}>
-                                        Economia real
+                            <div className='space-y-3'>
+                                <div className='flex items-center justify-between rounded-lg bg-purple-50 px-4 py-3'>
+                                    <span className='text-sm font-medium text-purple-700'>Meta de economia</span>
+                                    <span className='text-lg font-bold text-purple-600'>
+                                        {formatCurrency(data.savingsGoal)}
                                     </span>
-                                    {hasGoal && (
-                                        <p
-                                            className={`mt-0.5 text-xs ${isAboveGoal ? 'text-green-600' : 'text-red-600'}`}>
-                                            {difference === 0
-                                                ? 'Na meta!'
-                                                : difference > 0
-                                                  ? `+${percentage.toFixed(0)}% acima da meta`
-                                                  : `${percentage.toFixed(0)}% abaixo da meta`}
-                                        </p>
-                                    )}
                                 </div>
-                                <span
-                                    className={`text-2xl font-bold ${isAboveGoal ? 'text-green-600' : 'text-red-600'}`}>
-                                    {formatCurrency(realSavings)}
-                                </span>
+
+                                <div className='flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3'>
+                                    <span className='text-sm font-medium text-gray-600'>Gastos reais do mês</span>
+                                    <span className='text-lg font-bold text-gray-800'>
+                                        {formatCurrency(totalActualSpending)}
+                                    </span>
+                                </div>
+
+                                <div
+                                    className={`flex items-center justify-between rounded-lg border-2 px-4 py-4 ${
+                                        isAboveGoal ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50'
+                                    }`}>
+                                    <div>
+                                        <span
+                                            className={`text-sm font-medium ${isAboveGoal ? 'text-green-700' : 'text-red-700'}`}>
+                                            Economia real
+                                        </span>
+                                        {hasGoal && (
+                                            <p
+                                                className={`mt-0.5 text-xs ${isAboveGoal ? 'text-green-600' : 'text-red-600'}`}>
+                                                {difference === 0
+                                                    ? 'Na meta!'
+                                                    : difference > 0
+                                                      ? `+${percentage.toFixed(0)}% acima da meta`
+                                                      : `${percentage.toFixed(0)}% abaixo da meta`}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <span
+                                        className={`text-2xl font-bold ${isAboveGoal ? 'text-green-600' : 'text-red-600'}`}>
+                                        {formatCurrency(realSavings)}
+                                    </span>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                );
-            })()}
+                    );
+                })()}
 
             <TrackingModal isOpen={isTrackingOpen} onClose={() => setIsTrackingOpen(false)} />
         </div>

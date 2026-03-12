@@ -37,9 +37,7 @@ const AppLayout = ({ children }: { children: ReactNode }) => {
 
     return (
         <FinancialContext.Provider value={{ data, updateData, scenario, setScenario }}>
-            <TrackingContext.Provider value={{ trackingData, setTrackingData }}>
-                {children}
-            </TrackingContext.Provider>
+            <TrackingContext.Provider value={{ trackingData, setTrackingData }}>{children}</TrackingContext.Provider>
         </FinancialContext.Provider>
     );
 };

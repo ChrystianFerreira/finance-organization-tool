@@ -31,9 +31,7 @@ export function useTracking() {
             const updatedMappings = [...prev.titleMappings];
 
             for (const mapping of newMappings) {
-                const existingIndex = updatedMappings.findIndex(
-                    (m) => m.titleNormalized === mapping.titleNormalized
-                );
+                const existingIndex = updatedMappings.findIndex((m) => m.titleNormalized === mapping.titleNormalized);
                 if (existingIndex >= 0) {
                     updatedMappings[existingIndex] = mapping;
                 } else {
@@ -53,7 +51,12 @@ export function useTracking() {
 
         for (const txn of trackingData.transactions) {
             if (!txn.date.startsWith(month)) continue;
-            if (txn.categoryName === 'skipped' || txn.categoryName === 'weekly_budget' || txn.categoryName === 'unplanned') continue;
+            if (
+                txn.categoryName === 'skipped' ||
+                txn.categoryName === 'weekly_budget' ||
+                txn.categoryName === 'unplanned'
+            )
+                continue;
             if (!txn.itemId) continue;
 
             result[txn.itemId] = (result[txn.itemId] || 0) + txn.amount;

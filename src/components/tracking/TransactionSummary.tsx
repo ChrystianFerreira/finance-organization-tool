@@ -1,10 +1,9 @@
 'use client';
 
-import { Pencil } from 'lucide-react';
-
 import { formatCurrency } from '@/utils';
 
 import { Decision } from './TransactionCard';
+import { Pencil } from 'lucide-react';
 
 type SummaryEntry = {
     date: string;
@@ -57,9 +56,9 @@ export const TransactionSummary = ({ entries, onEdit, onConfirm, onBack }: Trans
                             <tr
                                 key={index}
                                 className={entry.decision.categoryName === 'skipped' ? 'text-gray-300' : ''}>
-                                <td className='whitespace-nowrap px-3 py-2'>{formatDate(entry.date)}</td>
+                                <td className='px-3 py-2 whitespace-nowrap'>{formatDate(entry.date)}</td>
                                 <td className='max-w-48 truncate px-3 py-2'>{entry.title}</td>
-                                <td className='whitespace-nowrap px-3 py-2 text-right'>
+                                <td className='px-3 py-2 text-right whitespace-nowrap'>
                                     {formatCurrency(entry.amount)}
                                 </td>
                                 <td className='px-3 py-2'>

@@ -1,9 +1,9 @@
 'use client';
 
-import { Check } from 'lucide-react';
-
 import { ExpenseCategory } from '@/types';
 import { formatCurrency } from '@/utils';
+
+import { Check } from 'lucide-react';
 
 type Selection = {
     categoryName: string;
